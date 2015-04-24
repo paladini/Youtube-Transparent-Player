@@ -1,14 +1,20 @@
 {
 	"name": "Youtube Transparent Player",
 	"description": "Enable the new Youtube Transparent Player.",
-	"version": "0.1",
+	"version": "0.2",
 	"permissions": [
 		"cookies",
+		"background",
 		"*://*.youtube.com/*"
 	],
 	"background": {
-		"scripts": ["js/background.js"]
+		"scripts": ["js/background.js"],
+		"persistent": false
 	},
+	"content_scripts": [{
+	      "matches": ["*://*.youtube.com/*"],
+	      "js": ["js/content.js"]
+	}],
 	"icons": {
 		"24": "images/icon24.png",
 		"48": "images/icon48.png",
