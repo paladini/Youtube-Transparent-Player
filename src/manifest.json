@@ -1,7 +1,10 @@
 {
 	"name": "Youtube Transparent Player",
+	"short_name": "YT New Player",
 	"description": "Enable the new Youtube Transparent Player.",
-	"version": "0.2",
+	"author": "Fernando Paladini",
+	"homepage_url" : "https://github.com/paladini/Youtube-Transparent-Player",
+	"version": "0.3",
 	"permissions": [
 		"cookies",
 		"background",
@@ -11,10 +14,6 @@
 		"scripts": ["js/background.js"],
 		"persistent": false
 	},
-	"content_scripts": [{
-	      "matches": ["*://*.youtube.com/*"],
-	      "js": ["js/content.js"]
-	}],
 	"icons": {
 		"24": "images/icon24.png",
 		"48": "images/icon48.png",
@@ -24,6 +23,7 @@
 		"page": "options.html",
 		"chrome_style": true
 	},
+	"options_page": "options.html",
 	"manifest_version": 2
 }
 
