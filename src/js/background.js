@@ -1,42 +1,34 @@
-// Compatibility reasons
-if (!chrome.runtime) { // Chrome 20-12
-    chrome.runtime = chrome.extension;
-} else if(!chrome.runtime.onMessage) { // Chrome 22-25
-    chrome.runtime.onMessage = chrome.extension.onMessage;
-    chrome.runtime.sendMessage = chrome.extension.sendMessage;
-    chrome.runtime.onConnect = chrome.extension.onConnect;
-    chrome.runtime.connect = chrome.extension.connect;
-}
-
 var cookieCache = null, cookieConfig = null, cookiesLoaded = false;
 var languageConfig = {
-	url: "http://youtube.com", 
+	url: "https://www.youtube.com", 
 	name: "PREF"
 };
 
 var cacheConfig = {
-	url: "http://youtube.com",
+	url: "https://www.youtube.com",
 	name: "VISITOR_INFO1_LIVE"
 };
 
 /** Set the cookie responsible for enable the new Youtube Transparent Player. */
-function createCookiePlayer() {
+function createCookiePlayer(callback) {
 	chrome.cookies.set({
-		url: "http://youtube.com",
+		url: "https://www.youtube.com",
 		name: "VISITOR_INFO1_LIVE",
 		value: "Q06SngRDTGA",
 		domain: ".youtube.com",
 		path: "/",
 		expirationDate: (new Date().getTime()/1000) + 15552000
 	}, function() {
-		alert("Done! Now your new Youtube transparent player should be working! Anyway, don't forget to check the options page.\n\nPlease, reload your open Youtube tabs (or open a new one) to test the new player.");
+		if (callback) {
+			callback();
+		}
 	});
 };
 
 /** Set the cookie responsible for the language settings. Works both for cookie cretion or overwrite. */
 function createCookieLanguage(cookie, callback) {
 	chrome.cookies.set({
-		url: "http://youtube.com",
+		url: "https://www.youtube.com",
 		name: "PREF",
 		value: cookie.value,
 		domain: ".youtube.com",
@@ -92,31 +84,52 @@ function getCookies(callback) {
 	});
 }
 
+function ensureYoutubeCookies(callback) {
+	if (cookiesLoaded == false) {
+		getCookies(function(){
+			check();
+			if (callback) {
+				callback();
+			}
+		});
+	} else {
+		check();
+		if (callback) {
+			callback();
+		}
+	}
+}
+
 // Adding listener.
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     if (request.type == "reinstall"){ // from options page
-    	
+		var onReinstalled = function() {
+			sendResponse({
+				success: true,
+				message: "Done! Reload your open Youtube tabs (or open a new one) to test the transparent player."
+			});
+		};
+
     	// Check if the cookies are loaded.
     	if(cookiesLoaded == false) {
 	    	getCookies(function(){
 	    		changePreferences(function() {
-		    		createCookiePlayer();
+		    		createCookiePlayer(onReinstalled);
 		    	});
 	    	});
     	} else {
     		changePreferences(function() {
-	    		createCookiePlayer();
+	    		createCookiePlayer(onReinstalled);
 	    	});
     	}
     }
 	return true;
 });
 
-// Check if the cookies are loaded.
-if(cookiesLoaded == false) {
-	getCookies(function(){
-		check();
-	});
-} else {
-	check();
-}
+chrome.runtime.onInstalled.addListener(function() {
+	ensureYoutubeCookies();
+});
+
+chrome.runtime.onStartup.addListener(function() {
+	ensureYoutubeCookies();
+});
